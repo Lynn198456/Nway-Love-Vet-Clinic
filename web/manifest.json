@@ -1,11 +1,11 @@
 {
-    "name": "nway_love_vet_clinic",
-    "short_name": "nway_love_vet_clinic",
+    "name": "နွေးမေတ္တာ Vet Clinic & Pet Accessories",
+    "short_name": "နွေးမေတ္တာ Vet Clinic & Pet Accessories",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Vet Clinic & Pet Accessories",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

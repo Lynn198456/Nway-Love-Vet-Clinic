@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:nway_love_vet_clinic/pet_owner/my_pets_page.dart';
 
 void main() {
   runApp(const LoveVetClinicApp());
@@ -13,7 +14,7 @@ class LoveVetClinicApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Love Vet Clinic',
+      title: 'နွေးမေတ္တာ Vet Clinic & Pet Accessories',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFFA8C0B3),
@@ -265,7 +266,13 @@ class _LoginFormSheet extends StatelessWidget {
                         width: double.infinity,
                         height: metrics.secondaryButtonHeight,
                         child: ElevatedButton(
-                          onPressed: () {},
+                              onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const MyPetsPage(),
+                              ),
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2E2C2C),
                             foregroundColor: Colors.white,
