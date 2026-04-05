@@ -1,7 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:nway_love_vet_clinic/clinic/clinic_page.dart';
 import 'package:nway_love_vet_clinic/pet_owner/pet_detail_page.dart';
+import 'package:nway_love_vet_clinic/profile/profile_page.dart';
+import 'package:nway_love_vet_clinic/products/available_products_page.dart';
 
 class MyPetsPage extends StatelessWidget {
   const MyPetsPage({super.key});
@@ -433,22 +436,64 @@ class _BottomNav extends StatelessWidget {
             ),
           ),
           SizedBox(width: metrics.navIconGap),
-          Image.asset(
-            addIconAsset,
-            width: metrics.navIconSize,
-            height: metrics.navIconSize,
+          InkWell(
+            key: const Key('pets_nav_clinic'),
+            borderRadius: BorderRadius.circular(18),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ClinicPage(),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(2),
+              child: Image.asset(
+                addIconAsset,
+                width: metrics.navIconSize,
+                height: metrics.navIconSize,
+              ),
+            ),
           ),
           SizedBox(width: metrics.navIconGap),
-          Image.asset(
-            basketIconAsset,
-            width: metrics.navIconSize,
-            height: metrics.navIconSize,
+          InkWell(
+            key: const Key('pets_nav_products'),
+            borderRadius: BorderRadius.circular(18),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const AvailableProductsPage(),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(2),
+              child: Image.asset(
+                basketIconAsset,
+                width: metrics.navIconSize,
+                height: metrics.navIconSize,
+              ),
+            ),
           ),
           SizedBox(width: metrics.navIconGap),
-          Image.asset(
-            profileIconAsset,
-            width: metrics.navIconSize,
-            height: metrics.navIconSize,
+          InkWell(
+            key: const Key('pets_nav_profile'),
+            borderRadius: BorderRadius.circular(18),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ProfilePage(),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(2),
+              child: Image.asset(
+                profileIconAsset,
+                width: metrics.navIconSize,
+                height: metrics.navIconSize,
+              ),
+            ),
           ),
         ],
       ),

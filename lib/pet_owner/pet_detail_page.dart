@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nway_love_vet_clinic/pet_owner/reminder_page.dart';
 
 class PetProfile {
   const PetProfile({
@@ -295,9 +296,20 @@ class _PetDetailPageState extends State<PetDetailPage> {
                               subtitle: 'Vaccines, reminders, and care alerts',
                               headingSize: headingSize,
                               borderRadius: sectionRadius,
-                              trailing: _SoftActionButton(
-                                label: 'Edit Reminder',
-                                compact: compact,
+                              trailing: GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) => ReminderPage(
+                                        petName: pet.name,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: _SoftActionButton(
+                                  label: 'Edit Reminder',
+                                  compact: compact,
+                                ),
                               ),
                               child: Column(
                                 children: [
