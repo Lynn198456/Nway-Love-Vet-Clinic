@@ -75,6 +75,15 @@ class MyPetsPage extends StatelessWidget {
                                     color: Colors.black,
                                   ),
                                 ),
+                                SizedBox(height: metrics.cardGap * 0.6),
+                                Text(
+                                  'Keep pet records, reminders, and appointments in one place.',
+                                  style: TextStyle(
+                                    fontSize: metrics.bodyCaptionSize,
+                                    color: const Color(0xFF5E7067),
+                                    height: 1.2,
+                                  ),
+                                ),
                                 SizedBox(height: metrics.cardGap),
                                 _PetCarousel(
                                   metrics: metrics,
@@ -85,6 +94,13 @@ class MyPetsPage extends StatelessWidget {
                                 _SectionTitle(
                                   title: 'Reminders',
                                   fontSize: metrics.headingSize,
+                                  subtitle: 'Stay on top of medicine, vaccines, and feeding time.',
+                                ),
+                                SizedBox(height: metrics.cardGap),
+                                _HelpfulTip(
+                                  metrics: metrics,
+                                  text:
+                                      'Tap any pet card to open details, update photos, or manage reminders.',
                                 ),
                                 SizedBox(height: metrics.cardGap),
                                 ..._reminders.map(
@@ -100,6 +116,7 @@ class MyPetsPage extends StatelessWidget {
                                 _SectionTitle(
                                   title: 'Appointments',
                                   fontSize: metrics.headingSize,
+                                  subtitle: 'Upcoming visits and check-in reminders.',
                                 ),
                                 SizedBox(height: metrics.cardGap),
                                 _InfoCard(
@@ -329,19 +346,85 @@ class _PetCard extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({required this.title, required this.fontSize});
+  const _SectionTitle({
+    required this.title,
+    required this.fontSize,
+    this.subtitle,
+  });
 
   final String title;
   final double fontSize;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: fontSize,
-        fontWeight: FontWeight.w500,
-        color: Colors.black,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w500,
+            color: Colors.black,
+          ),
+        ),
+        if (subtitle case final String subtitleText) ...[
+          const SizedBox(height: 4),
+          Text(
+            subtitleText,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF5E7067),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _HelpfulTip extends StatelessWidget {
+  const _HelpfulTip({
+    required this.metrics,
+    required this.text,
+  });
+
+  final _OwnerMetrics metrics;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: metrics.infoCardPadding,
+        vertical: metrics.infoCardVerticalPadding * 0.85,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE5EFEA),
+        borderRadius: BorderRadius.circular(metrics.infoCardRadius),
+        border: Border.all(color: const Color(0xFFB5CABC)),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.lightbulb_outline_rounded,
+            size: 22,
+            color: Color(0xFF56766A),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: metrics.tipTextSize,
+                height: 1.24,
+                color: const Color(0xFF355046),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -528,6 +611,8 @@ class _OwnerMetrics {
     required this.navIconGap,
     required this.navIconSize,
     required this.navSelectedIconSize,
+    required this.bodyCaptionSize,
+    required this.tipTextSize,
   });
 
   final double maxContentWidth;
@@ -555,6 +640,8 @@ class _OwnerMetrics {
   final double navIconGap;
   final double navIconSize;
   final double navSelectedIconSize;
+  final double bodyCaptionSize;
+  final double tipTextSize;
 
   static _OwnerMetrics fromSize(Size size) {
     final width = size.width;
@@ -589,6 +676,8 @@ class _OwnerMetrics {
       navIconGap: shortest < 390 ? 12 : 16,
       navIconSize: shortest < 390 ? 32 : 36,
       navSelectedIconSize: shortest < 390 ? 28 : 32,
+      bodyCaptionSize: shortest < 390 ? 14 : 16,
+      tipTextSize: shortest < 390 ? 14 : 15,
     );
   }
 }

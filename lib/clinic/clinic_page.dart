@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:nway_love_vet_clinic/profile/profile_page.dart';
 import 'package:nway_love_vet_clinic/products/available_products_page.dart';
+import 'package:nway_love_vet_clinic/shared/feature_info_page.dart';
 
 class ClinicPage extends StatelessWidget {
   const ClinicPage({super.key});
@@ -70,6 +71,25 @@ class ClinicPage extends StatelessWidget {
                                   fit: BoxFit.contain,
                                 ),
                                 SizedBox(height: metrics.sectionGap),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: metrics.helperHorizontalPadding,
+                                    vertical: metrics.helperVerticalPadding,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.74),
+                                    borderRadius: BorderRadius.circular(22),
+                                  ),
+                                  child: Text(
+                                    'Find clinic details, doctor info, and the fastest service option for your visit.',
+                                    style: TextStyle(
+                                      fontSize: metrics.helperTextSize,
+                                      color: const Color(0xFF3F564B),
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: metrics.sectionGap),
                                 _ClinicHero(metrics: metrics, petsAsset: _petsAsset),
                                 SizedBox(height: metrics.sectionGap),
                                 Text(
@@ -92,7 +112,34 @@ class ClinicPage extends StatelessWidget {
                                   ),
                                 ),
                                 SizedBox(height: metrics.cardGap),
-                                _CategoryList(metrics: metrics),
+                                _CategoryList(
+                                  metrics: metrics,
+                                  onSelected: (category) {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                        builder: (_) => FeatureInfoPage(
+                                          title: category.label.replaceAll('\n', ' '),
+                                          icon: category.icon,
+                                          accentColor: const Color(0xFFAFC5B8),
+                                          primaryActionLabel: category.actionLabel,
+                                          sections: [
+                                            FeatureInfoSection(
+                                              heading: 'Overview',
+                                              items: [
+                                                category.description,
+                                                category.details,
+                                              ],
+                                            ),
+                                            FeatureInfoSection(
+                                              heading: 'How It Helps',
+                                              items: category.benefits,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ],
                             ),
                           ),
@@ -402,6 +449,17 @@ class _DoctorProfiles extends StatelessWidget {
                     color: const Color(0xFF3E5349),
                   ),
                 ),
+                SizedBox(height: metrics.heroTextGap),
+                Text(
+                  doctor.specialty,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: metrics.doctorSpecialtySize,
+                    color: const Color(0xFF5E7067),
+                    height: 1.2,
+                  ),
+                ),
               ],
             ),
           );
@@ -412,9 +470,13 @@ class _DoctorProfiles extends StatelessWidget {
 }
 
 class _CategoryList extends StatelessWidget {
-  const _CategoryList({required this.metrics});
+  const _CategoryList({
+    required this.metrics,
+    required this.onSelected,
+  });
 
   final _ClinicMetrics metrics;
+  final ValueChanged<_ClinicCategory> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -428,40 +490,56 @@ class _CategoryList extends StatelessWidget {
           final category = _categories[index];
           return SizedBox(
             width: metrics.categoryItemWidth,
-            child: Column(
-              children: [
-                Container(
-                  width: metrics.categoryCircleSize,
-                  height: metrics.categoryCircleSize,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF4F6FF),
-                    shape: BoxShape.circle,
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x18000000),
-                        blurRadius: 10,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
+            child: InkWell(
+              borderRadius: BorderRadius.circular(28),
+              onTap: () => onSelected(category),
+              child: Column(
+                children: [
+                  Container(
+                    width: metrics.categoryCircleSize,
+                    height: metrics.categoryCircleSize,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF4F6FF),
+                      shape: BoxShape.circle,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x18000000),
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      category.icon,
+                      size: metrics.categoryIconSize,
+                      color: const Color(0xFF111111),
+                    ),
                   ),
-                  child: Icon(
-                    category.icon,
-                    size: metrics.categoryIconSize,
-                    color: const Color(0xFF111111),
+                  SizedBox(height: metrics.categoryLabelGap),
+                  Text(
+                    category.label,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: metrics.categoryLabelSize,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF26332D),
+                      height: 1.15,
+                    ),
                   ),
-                ),
-                SizedBox(height: metrics.categoryLabelGap),
-                Text(
-                  category.label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: metrics.categoryLabelSize,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF26332D),
-                    height: 1.15,
+                  SizedBox(height: metrics.heroTextGap),
+                  Text(
+                    category.description,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: metrics.categoryDescriptionSize,
+                      color: const Color(0xFF50625A),
+                      height: 1.15,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
@@ -636,6 +714,11 @@ class _ClinicMetrics {
     required this.navIconGap,
     required this.navIconSize,
     required this.navSelectedIconSize,
+    required this.helperHorizontalPadding,
+    required this.helperVerticalPadding,
+    required this.helperTextSize,
+    required this.doctorSpecialtySize,
+    required this.categoryDescriptionSize,
   });
 
   final double maxContentWidth;
@@ -684,6 +767,11 @@ class _ClinicMetrics {
   final double navIconGap;
   final double navIconSize;
   final double navSelectedIconSize;
+  final double helperHorizontalPadding;
+  final double helperVerticalPadding;
+  final double helperTextSize;
+  final double doctorSpecialtySize;
+  final double categoryDescriptionSize;
 
   static _ClinicMetrics fromSize(Size size) {
     final width = size.width;
@@ -724,7 +812,7 @@ class _ClinicMetrics {
       doctorTextGap: shortest < 390 ? 12 : 16,
       doctorNameSize: isDesktop ? 24 : (shortest < 390 ? 18 : 20),
       doctorMetaSize: shortest < 390 ? 14 : 15,
-      categorySectionHeight: shortest < 390 ? 176 : 194,
+      categorySectionHeight: shortest < 390 ? 196 : 226,
       categoryItemWidth: shortest < 390 ? 102 : 114,
       categoryCircleSize: shortest < 390 ? 82 : 96,
       categoryIconSize: shortest < 390 ? 32 : 38,
@@ -739,6 +827,11 @@ class _ClinicMetrics {
       navIconGap: shortest < 390 ? 12 : 16,
       navIconSize: shortest < 390 ? 32 : 36,
       navSelectedIconSize: shortest < 390 ? 28 : 32,
+      helperHorizontalPadding: shortest < 390 ? 14 : 18,
+      helperVerticalPadding: shortest < 390 ? 12 : 14,
+      helperTextSize: shortest < 390 ? 14 : 15,
+      doctorSpecialtySize: shortest < 390 ? 13 : 14,
+      categoryDescriptionSize: shortest < 390 ? 12 : 13,
     );
   }
 }
@@ -748,21 +841,31 @@ class _DoctorProfile {
     required this.name,
     required this.qualification,
     required this.initials,
+    required this.specialty,
   });
 
   final String name;
   final String qualification;
   final String initials;
+  final String specialty;
 }
 
 class _ClinicCategory {
   const _ClinicCategory({
     required this.label,
     required this.icon,
+    required this.description,
+    required this.details,
+    required this.actionLabel,
+    required this.benefits,
   });
 
   final String label;
   final IconData icon;
+  final String description;
+  final String details;
+  final String actionLabel;
+  final List<String> benefits;
 }
 
 const _doctorProfiles = [
@@ -770,11 +873,13 @@ const _doctorProfiles = [
     name: 'Dr. Hnin Thiri Aung',
     qualification: 'B.V.Sc',
     initials: 'HA',
+    specialty: 'Routine checkups, vaccinations, and family pet care.',
   ),
   _DoctorProfile(
     name: 'Dr. Mu Mu',
     qualification: 'Senior Veterinarian',
     initials: 'MM',
+    specialty: 'Wellness visits, consultation, and treatment follow-up.',
   ),
 ];
 
@@ -782,21 +887,56 @@ const _categories = [
   _ClinicCategory(
     label: 'Booking',
     icon: Icons.calendar_month_outlined,
+    description: 'Book your next clinic visit.',
+    details: 'Choose a convenient day for checkups, follow-up care, or vaccinations.',
+    actionLabel: 'Start Booking',
+    benefits: [
+      'Pick a suitable visit type for your pet.',
+      'Plan ahead with enough time for records and reminders.',
+    ],
   ),
   _ClinicCategory(
     label: 'Queue',
     icon: Icons.people_outline_rounded,
+    description: 'Check waiting flow before arrival.',
+    details: 'See the current queue flow and plan the best time to come to the clinic.',
+    actionLabel: 'View Queue Tips',
+    benefits: [
+      'Avoid busier hours when possible.',
+      'Make arrivals smoother for both owner and pet.',
+    ],
   ),
   _ClinicCategory(
     label: 'Home Visit',
     icon: Icons.home_work_outlined,
+    description: 'Arrange care at home when needed.',
+    details: 'Request support for pets that are recovering, elderly, or difficult to transport.',
+    actionLabel: 'Request Home Visit',
+    benefits: [
+      'Helpful for pets with limited mobility.',
+      'Lets owners arrange care without stressful travel.',
+    ],
   ),
   _ClinicCategory(
     label: 'Medical\nServices',
     icon: Icons.medical_services_outlined,
+    description: 'Treatments, exams, and consultation.',
+    details: 'Review the main clinic services available for wellness visits and urgent concerns.',
+    actionLabel: 'Browse Services',
+    benefits: [
+      'Makes it easier to choose the right type of visit.',
+      'Gives owners a clearer idea of clinic support options.',
+    ],
   ),
   _ClinicCategory(
     label: 'Pet\nSupplies',
     icon: Icons.pets_outlined,
+    description: 'Food, accessories, and essentials.',
+    details: 'Shop for food, grooming basics, and everyday pet accessories in the products area.',
+    actionLabel: 'Open Products',
+    benefits: [
+      'Quick access to pet essentials after appointments.',
+      'Convenient refills for food and common supplies.',
+    ],
   ),
 ];

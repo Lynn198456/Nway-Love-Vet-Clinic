@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:nway_love_vet_clinic/profile/profile_page.dart';
+import 'package:nway_love_vet_clinic/shared/feature_info_page.dart';
 
 class AvailableProductsPage extends StatefulWidget {
   const AvailableProductsPage({super.key});
@@ -40,6 +41,58 @@ class _AvailableProductsPageState extends State<AvailableProductsPage> {
           product.category.toLowerCase().contains(query);
       return matchesCategory && matchesSearch;
     }).toList();
+  }
+
+  void _showQuickMenuPage({
+    required String title,
+    required IconData icon,
+    required List<String> items,
+  }) {
+    setState(() {
+      _showQuickMenu = false;
+    });
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => FeatureInfoPage(
+          title: title,
+          icon: icon,
+          accentColor: const Color(0xFFAFC5B8),
+          sections: [
+            FeatureInfoSection(
+              heading: 'Details',
+              items: items,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showProductDetails(_ProductItem product) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => FeatureInfoPage(
+          title: product.name,
+          icon: product.icon,
+          accentColor: product.iconColor,
+          primaryActionLabel: 'Add to Cart',
+          sections: [
+            FeatureInfoSection(
+              heading: 'Price',
+              items: ['${product.price} MMK'],
+            ),
+            FeatureInfoSection(
+              heading: 'About This Product',
+              items: [
+                product.description,
+                'Category: ${product.category}',
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -110,6 +163,14 @@ class _AvailableProductsPageState extends State<AvailableProductsPage> {
                                   onChanged: (_) => setState(() {}),
                                 ),
                                 SizedBox(height: metrics.sectionGap),
+                                Text(
+                                  '${products.length} products available',
+                                  style: TextStyle(
+                                    fontSize: metrics.helperTextSize,
+                                    color: const Color(0xFF41544C),
+                                  ),
+                                ),
+                                SizedBox(height: metrics.sectionGap * 0.6),
                                 _CategoryTabs(
                                   metrics: metrics,
                                   selectedCategory: _selectedCategory,
@@ -120,21 +181,25 @@ class _AvailableProductsPageState extends State<AvailableProductsPage> {
                                   },
                                 ),
                                 SizedBox(height: metrics.sectionGap),
-                                GridView.builder(
-                                  itemCount: products.length,
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: metrics.gridCrossAxisCount,
-                                    mainAxisSpacing: metrics.gridSpacing,
-                                    crossAxisSpacing: metrics.gridSpacing,
-                                    mainAxisExtent: metrics.productCardHeight,
-                                  ),
-                                  itemBuilder: (context, index) {
-                                    return _ProductCard(
+                                if (products.isEmpty)
+                                  _EmptyProductsState(metrics: metrics)
+                                else
+                                  GridView.builder(
+                                    itemCount: products.length,
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: metrics.gridCrossAxisCount,
+                                      mainAxisSpacing: metrics.gridSpacing,
+                                      crossAxisSpacing: metrics.gridSpacing,
+                                      mainAxisExtent: metrics.productCardHeight,
+                                    ),
+                                    itemBuilder: (context, index) {
+                                      return _ProductCard(
                                       product: products[index],
                                       metrics: metrics,
+                                      onTap: () => _showProductDetails(products[index]),
                                     );
                                   },
                                 ),
@@ -163,7 +228,25 @@ class _AvailableProductsPageState extends State<AvailableProductsPage> {
                   Positioned(
                     right: metrics.quickMenuRight,
                     bottom: metrics.quickMenuBottom,
-                    child: _QuickMenu(metrics: metrics),
+                    child: _QuickMenu(
+                      metrics: metrics,
+                      onOrdersTap: () => _showQuickMenuPage(
+                        title: 'Orders',
+                        icon: Icons.fact_check_outlined,
+                        items: const [
+                          'Order #2301 is being prepared for pickup.',
+                          'Order #2288 was delivered successfully last week.',
+                        ],
+                      ),
+                      onCartTap: () => _showQuickMenuPage(
+                        title: 'Cart',
+                        icon: Icons.shopping_cart_outlined,
+                        items: const [
+                          'Dog Food 02 x1',
+                          'Cat Food 01 x2',
+                        ],
+                      ),
+                    ),
                   ),
                 Positioned(
                   right: metrics.quickButtonRight,
@@ -358,22 +441,34 @@ class _ProductCard extends StatelessWidget {
   const _ProductCard({
     required this.product,
     required this.metrics,
+    required this.onTap,
   });
 
   final _ProductItem product;
   final _ProductsMetrics metrics;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(metrics.productCardPadding),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.96),
-        borderRadius: BorderRadius.circular(metrics.productCardRadius),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return InkWell(
+      borderRadius: BorderRadius.circular(metrics.productCardRadius),
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(metrics.productCardPadding),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.96),
+          borderRadius: BorderRadius.circular(metrics.productCardRadius),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x12000000),
+              blurRadius: 12,
+              offset: Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Expanded(
             child: Container(
               width: double.infinity,
@@ -424,6 +519,8 @@ class _ProductCard extends StatelessWidget {
           SizedBox(height: metrics.productTextGap),
           Text(
             product.name,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: metrics.productNameSize,
               fontWeight: FontWeight.w700,
@@ -439,6 +536,56 @@ class _ProductCard extends StatelessWidget {
               color: const Color(0xFFFF0000),
             ),
           ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyProductsState extends StatelessWidget {
+  const _EmptyProductsState({required this.metrics});
+
+  final _ProductsMetrics metrics;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: metrics.emptyStateHorizontalPadding,
+        vertical: metrics.emptyStateVerticalPadding,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.search_off_rounded,
+            size: metrics.emptyStateIconSize,
+            color: const Color(0xFF688178),
+          ),
+          SizedBox(height: metrics.searchGap),
+          Text(
+            'No products matched your search.',
+            style: TextStyle(
+              fontSize: metrics.emptyStateTitleSize,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+          SizedBox(height: metrics.priceGap),
+          Text(
+            'Try a different keyword or switch back to all products.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: metrics.helperTextSize,
+              color: const Color(0xFF5E7067),
+              height: 1.2,
+            ),
+          ),
         ],
       ),
     );
@@ -446,9 +593,15 @@ class _ProductCard extends StatelessWidget {
 }
 
 class _QuickMenu extends StatelessWidget {
-  const _QuickMenu({required this.metrics});
+  const _QuickMenu({
+    required this.metrics,
+    required this.onOrdersTap,
+    required this.onCartTap,
+  });
 
   final _ProductsMetrics metrics;
+  final VoidCallback onOrdersTap;
+  final VoidCallback onCartTap;
 
   @override
   Widget build(BuildContext context) {
@@ -461,15 +614,17 @@ class _QuickMenu extends StatelessWidget {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: const [
+        children: [
           _QuickMenuItem(
             icon: Icons.fact_check_outlined,
             label: 'Orders',
+            onTap: onOrdersTap,
           ),
           Divider(height: 1, color: Color(0xFFB9B9B9)),
           _QuickMenuItem(
             icon: Icons.shopping_cart_outlined,
             label: 'Cart',
+            onTap: onCartTap,
           ),
         ],
       ),
@@ -481,32 +636,37 @@ class _QuickMenuItem extends StatelessWidget {
   const _QuickMenuItem({
     required this.icon,
     required this.label,
+    required this.onTap,
   });
 
   final IconData icon;
   final String label;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            size: 36,
-            color: const Color(0xFF7A9890),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF6C8C84),
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 36,
+              color: const Color(0xFF7A9890),
             ),
-          ),
-        ],
+            const SizedBox(height: 10),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF6C8C84),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -672,6 +832,11 @@ class _ProductsMetrics {
     required this.navIconGap,
     required this.navIconSize,
     required this.navSelectedIconSize,
+    required this.helperTextSize,
+    required this.emptyStateHorizontalPadding,
+    required this.emptyStateVerticalPadding,
+    required this.emptyStateIconSize,
+    required this.emptyStateTitleSize,
   });
 
   final double maxContentWidth;
@@ -726,6 +891,11 @@ class _ProductsMetrics {
   final double navIconGap;
   final double navIconSize;
   final double navSelectedIconSize;
+  final double helperTextSize;
+  final double emptyStateHorizontalPadding;
+  final double emptyStateVerticalPadding;
+  final double emptyStateIconSize;
+  final double emptyStateTitleSize;
 
   static _ProductsMetrics fromSize(Size size) {
     final width = size.width;
@@ -759,8 +929,8 @@ class _ProductsMetrics {
       gridSpacing: shortest < 390 ? 14 : 18,
       productCardHeight: shortest < 390 ? 260 : 310,
       productCardPadding: shortest < 390 ? 12 : 14,
-      productCardRadius: 0,
-      productImageRadius: 0,
+      productCardRadius: 16,
+      productImageRadius: 20,
       packLeftInset: shortest < 390 ? 18 : 24,
       packRightInset: shortest < 390 ? 18 : 24,
       packTopInset: shortest < 390 ? 16 : 20,
@@ -787,6 +957,11 @@ class _ProductsMetrics {
       navIconGap: shortest < 390 ? 12 : 16,
       navIconSize: shortest < 390 ? 32 : 36,
       navSelectedIconSize: shortest < 390 ? 28 : 32,
+      helperTextSize: shortest < 390 ? 14 : 15,
+      emptyStateHorizontalPadding: shortest < 390 ? 18 : 26,
+      emptyStateVerticalPadding: shortest < 390 ? 24 : 30,
+      emptyStateIconSize: shortest < 390 ? 42 : 52,
+      emptyStateTitleSize: shortest < 390 ? 18 : 20,
     );
   }
 }
@@ -796,6 +971,7 @@ class _ProductItem {
     required this.name,
     required this.price,
     required this.category,
+    required this.description,
     required this.icon,
     required this.iconColor,
     required this.imageColors,
@@ -804,6 +980,7 @@ class _ProductItem {
   final String name;
   final int price;
   final String category;
+  final String description;
   final IconData icon;
   final Color iconColor;
   final List<Color> imageColors;
@@ -819,6 +996,7 @@ const _products = [
     name: 'Dog Food 01',
     price: 4000,
     category: 'Food',
+    description: 'Balanced daily food for adult dogs with a familiar flavor and easy portion size.',
     icon: Icons.pets_rounded,
     iconColor: Color(0xFFD7A100),
     imageColors: [Color(0xFFF8D74A), Color(0xFFF2B61E)],
@@ -827,6 +1005,7 @@ const _products = [
     name: 'Cat Food 01',
     price: 4000,
     category: 'Food',
+    description: 'Crunchy cat food option for indoor and active cats with everyday nutrition support.',
     icon: Icons.pets_outlined,
     iconColor: Color(0xFF8C5AC8),
     imageColors: [Color(0xFFF6D34D), Color(0xFFC99AF8)],
@@ -835,6 +1014,7 @@ const _products = [
     name: 'Rabbit Food 01',
     price: 4000,
     category: 'Food',
+    description: 'Pellet-style rabbit food with plant-based ingredients for routine feeding.',
     icon: Icons.eco_outlined,
     iconColor: Color(0xFF649846),
     imageColors: [Color(0xFFC6F0B5), Color(0xFF8AB971)],
@@ -843,6 +1023,7 @@ const _products = [
     name: 'Dog Food 02',
     price: 6000,
     category: 'Food',
+    description: 'Larger pack size for multi-pet homes or longer feeding cycles.',
     icon: Icons.shopping_bag_outlined,
     iconColor: Color(0xFFD69A2E),
     imageColors: [Color(0xFFF5D788), Color(0xFFE8AA59)],
@@ -851,6 +1032,7 @@ const _products = [
     name: 'Dog Food 03',
     price: 4500,
     category: 'Food',
+    description: 'Affordable everyday dog food for owners who need a quick clinic pickup.',
     icon: Icons.inventory_2_outlined,
     iconColor: Color(0xFFD9B61B),
     imageColors: [Color(0xFFF9E440), Color(0xFFCBE26A)],
@@ -859,6 +1041,7 @@ const _products = [
     name: 'Cat Food 02',
     price: 4200,
     category: 'Food',
+    description: 'Wet-style meal option for cats that prefer softer textures and smaller portions.',
     icon: Icons.lunch_dining_outlined,
     iconColor: Color(0xFF8C755A),
     imageColors: [Color(0xFFE9E3D8), Color(0xFFC3B5A1)],

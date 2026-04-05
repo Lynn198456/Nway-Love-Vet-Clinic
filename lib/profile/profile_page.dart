@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:nway_love_vet_clinic/clinic/clinic_page.dart';
 import 'package:nway_love_vet_clinic/pet_owner/my_pets_page.dart';
 import 'package:nway_love_vet_clinic/products/available_products_page.dart';
+import 'package:nway_love_vet_clinic/shared/feature_info_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -68,10 +69,52 @@ class _ProfilePageState extends State<ProfilePage> {
     return null;
   }
 
-  void _showMessage(String label) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$label feature is ready for the next step.')),
+  void _showInfoSheet({
+    required String title,
+    required IconData icon,
+    required List<String> items,
+  }) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => FeatureInfoPage(
+          title: title,
+          icon: icon,
+          accentColor: const Color(0xFFAFC5B8),
+          sections: [
+            FeatureInfoSection(
+              heading: 'Details',
+              items: items,
+            ),
+          ],
+        ),
+      ),
     );
+  }
+
+  Future<void> _confirmLogout() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Do you want to return to the login page now?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == true && mounted) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
   }
 
   @override
@@ -128,6 +171,15 @@ class _ProfilePageState extends State<ProfilePage> {
                                   fit: BoxFit.contain,
                                 ),
                                 SizedBox(height: metrics.sectionGap),
+                                Text(
+                                  'Manage your profile, pets, and account settings from one friendly dashboard.',
+                                  style: TextStyle(
+                                    fontSize: metrics.helperTextSize,
+                                    color: const Color(0xFF4C6057),
+                                    height: 1.2,
+                                  ),
+                                ),
+                                SizedBox(height: metrics.sectionGap),
                                 _ProfileInfoCard(
                                   metrics: metrics,
                                   imageProvider: _profileImageProvider(),
@@ -145,7 +197,15 @@ class _ProfilePageState extends State<ProfilePage> {
                                           icon: Icons.call_outlined,
                                           iconColor: const Color(0xFFF70012),
                                           label: 'Emergency',
-                                          onTap: () => _showMessage('Emergency'),
+                                          onTap: () => _showInfoSheet(
+                                            title: 'Emergency',
+                                            icon: Icons.call_outlined,
+                                            items: const [
+                                              'Clinic hotline: 09-5312717',
+                                              'Backup contact: 09-965805940',
+                                              'Bring your pet records and arrive as quickly as possible for urgent care.',
+                                            ],
+                                          ),
                                         ),
                                       ),
                                       SizedBox(width: metrics.cardGap),
@@ -155,7 +215,15 @@ class _ProfilePageState extends State<ProfilePage> {
                                           icon: Icons.location_on_outlined,
                                           iconColor: const Color(0xFF4963D5),
                                           label: 'Location',
-                                          onTap: () => _showMessage('Location'),
+                                          onTap: () => _showInfoSheet(
+                                            title: 'Location',
+                                            icon: Icons.location_on_outlined,
+                                            items: const [
+                                              'Nway Myit Tar Vet Clinic',
+                                              'Chindwin street, Mingalardipa quarter, Pobba Thiri Township, Nay Pyi Taw',
+                                              'Clinic hours: 9AM - 12PM and 4PM - 7PM',
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -166,6 +234,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                   metrics: metrics,
                                   title: 'My Pet',
                                   trailing: 'View All',
+                                  onTrailingTap: () => _showInfoSheet(
+                                    title: 'All Pets',
+                                    icon: Icons.pets_rounded,
+                                    items: _profilePets
+                                        .map((pet) => '${pet.name}: ${pet.summary}')
+                                        .toList(),
+                                  ),
                                   child: Column(
                                     children: _profilePets
                                         .map(
@@ -189,6 +264,16 @@ class _ProfilePageState extends State<ProfilePage> {
                                   metrics: metrics,
                                   title: 'Appointment History',
                                   trailing: 'View All',
+                                  onTrailingTap: () => _showInfoSheet(
+                                    title: 'Appointment History',
+                                    icon: Icons.calendar_month_outlined,
+                                    items: _appointments
+                                        .map(
+                                          (appointment) =>
+                                              '${appointment.title}\n${appointment.meta}\n${appointment.status}',
+                                        )
+                                        .toList(),
+                                  ),
                                   child: Column(
                                     children: _appointments
                                         .map(
@@ -225,12 +310,18 @@ class _ProfilePageState extends State<ProfilePage> {
                                             metrics: metrics,
                                             icon: option.icon,
                                             label: option.label,
-                                            onTap: () =>
-                                                _showMessage(option.label),
+                                            onTap: () => _showInfoSheet(
+                                              title: option.label,
+                                              icon: option.icon,
+                                              items: option.items,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                      _LogoutButton(metrics: metrics),
+                                      _LogoutButton(
+                                        metrics: metrics,
+                                        onTap: _confirmLogout,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -286,9 +377,9 @@ class _ProfileInfoCard extends StatelessWidget {
         color: const Color(0xFFE5E5E5),
         borderRadius: BorderRadius.circular(metrics.sectionRadius),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           GestureDetector(
             onTap: onPickImage,
             child: Stack(
@@ -426,12 +517,14 @@ class _SectionCard extends StatelessWidget {
     required this.title,
     required this.child,
     this.trailing,
+    this.onTrailingTap,
   });
 
   final _ProfileMetrics metrics;
   final String title;
   final String? trailing;
   final Widget child;
+  final VoidCallback? onTrailingTap;
 
   @override
   Widget build(BuildContext context) {
@@ -440,6 +533,13 @@ class _SectionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFE5E5E5),
         borderRadius: BorderRadius.circular(metrics.sectionRadius),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 14,
+            offset: Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -457,12 +557,22 @@ class _SectionCard extends StatelessWidget {
                 ),
               ),
               if (trailing case final String trailingText)
-                Text(
-                  trailingText,
-                  style: TextStyle(
-                    fontSize: metrics.trailingSize,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black,
+                InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: onTrailingTap,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 4,
+                    ),
+                    child: Text(
+                      trailingText,
+                      style: TextStyle(
+                        fontSize: metrics.trailingSize,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
                   ),
                 ),
             ],
@@ -716,39 +826,47 @@ class _SettingTile extends StatelessWidget {
 }
 
 class _LogoutButton extends StatelessWidget {
-  const _LogoutButton({required this.metrics});
+  const _LogoutButton({
+    required this.metrics,
+    required this.onTap,
+  });
 
   final _ProfileMetrics metrics;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(
-        horizontal: metrics.logoutHorizontalPadding,
-        vertical: metrics.logoutVerticalPadding,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEE2734),
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.logout_rounded,
-            size: metrics.logoutIconSize,
-            color: Colors.white,
-          ),
-          SizedBox(width: metrics.infoGap),
-          Text(
-            'Logout',
-            style: TextStyle(
-              fontSize: metrics.logoutTextSize,
-              fontWeight: FontWeight.w600,
+    return InkWell(
+      borderRadius: BorderRadius.circular(22),
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(
+          horizontal: metrics.logoutHorizontalPadding,
+          vertical: metrics.logoutVerticalPadding,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEE2734),
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.logout_rounded,
+              size: metrics.logoutIconSize,
               color: Colors.white,
             ),
-          ),
-        ],
+            SizedBox(width: metrics.infoGap),
+            Text(
+              'Logout',
+              style: TextStyle(
+                fontSize: metrics.logoutTextSize,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -928,6 +1046,7 @@ class _ProfileMetrics {
     required this.navIconGap,
     required this.navIconSize,
     required this.navSelectedIconSize,
+    required this.helperTextSize,
   });
 
   final double maxContentWidth;
@@ -988,6 +1107,7 @@ class _ProfileMetrics {
   final double navIconGap;
   final double navIconSize;
   final double navSelectedIconSize;
+  final double helperTextSize;
 
   static _ProfileMetrics fromSize(Size size) {
     final width = size.width;
@@ -1055,6 +1175,7 @@ class _ProfileMetrics {
       navIconGap: shortest < 390 ? 12 : 16,
       navIconSize: shortest < 390 ? 32 : 36,
       navSelectedIconSize: shortest < 390 ? 28 : 32,
+      helperTextSize: shortest < 390 ? 14 : 15,
     );
   }
 }
@@ -1103,10 +1224,12 @@ class _AccountOption {
   const _AccountOption({
     required this.label,
     required this.icon,
+    required this.items,
   });
 
   final String label;
   final IconData icon;
+  final List<String> items;
 }
 
 const _profileFields = [
@@ -1165,17 +1288,33 @@ const _accountOptions = [
   _AccountOption(
     label: 'Account',
     icon: Icons.person_outline_rounded,
+    items: [
+      'Update your personal details, photo, and contact information.',
+      'Use this section to keep your clinic account profile current.',
+    ],
   ),
   _AccountOption(
     label: 'Notifications',
     icon: Icons.notifications_none_rounded,
+    items: [
+      'Reminder alerts are enabled for appointments and vaccinations.',
+      'You can review important clinic updates here.',
+    ],
   ),
   _AccountOption(
     label: 'Preferences',
     icon: Icons.tune_rounded,
+    items: [
+      'Choose how you want reminders and quick updates to appear.',
+      'Keep the app experience comfortable for everyday use.',
+    ],
   ),
   _AccountOption(
     label: 'About',
     icon: Icons.info_outline_rounded,
+    items: [
+      'နွေးမေတ္တာ Vet Clinic & Pet Accessories',
+      'Built to manage pets, reminders, appointments, and clinic support in one place.',
+    ],
   ),
 ];
